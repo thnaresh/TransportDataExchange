@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Login</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h2 class="text-center">Login</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" class="form-control" placeholder="Enter Username" required />
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="Enter Password" required />
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary btn-block">Login</button>
+                </div>
+                <div id="errorMessage" class="alert alert-danger" style="display: none;">
+                    Invalid username or password.
+                </div>
+                <div th:if="${param.logout}" class="alert alert-success">
+                    You have been logged out.
+                </div>
+            </form>
+            <div class="text-center mt-3">
+                <a href="/register" class="btn btn-link">New User? Register here</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById("loginForm").addEventListener("submit", async function(e) {
+     e.preventDefault();
+
+     const errorMessage = document.getElementById("errorMessage");
+     errorMessage.style.display = "none";
+
+     const username = document.getElementById("username").value;
+     const password = document.getElementById("password").value;
+
+     console.log("Submitting with username: " + username);
+     console.log("Submitting with password: " + password);
+
+     try {
+         const response = await fetch('/authenticate', {
+             method: 'POST',
+             headers: {
+                 'Content-Type': 'application/json'
+             },
+             body: JSON.stringify({
+                 username: username,
+                 password: password
+             })
+         });
+
+         if (!response.ok) {
+             throw new Error('Login failed');
+         }
+
+         const data = await response.json();
+
+         if (data.token) {
+             // Store JWT token in localStorage or sessionStorage
+             localStorage.setItem('jwtToken', data.token);
+
+             // Decode the JWT token to extract role and username
+             const payload = JSON.parse(atob(data.token.split('.')[1])); // Decode the payload (Base64)
+
+             // Redirect based on the role extracted from the JWT payload
+             if (payload.userRole === 'admin') {
+                 window.location.href = '/bogdandashboard.html';
+             } else if (payload.userRole === 'operations') {
+                 window.location.href = '/bovadashboard.html';
+             } else if (payload.userRole === 'qa') {
+                 window.location.href = '/bristoldashboard.html';
+             } else {
+                 window.location.href = '/login';
+             }
+         } else {
+             errorMessage.style.display = "block";
+         }
+     } catch (error) {
+         console.error("Error during authentication:", error);
+         errorMessage.style.display = "block";
+     }
+ });
+
+</script>
+
+</body>
+</html>

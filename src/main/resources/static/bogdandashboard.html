@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h2 class="text-center" th:text="${message}"></h2>
+
+            <!-- File Upload Form -->
+            <form th:action="@{/uploadFile}" method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="file">Upload CSV or Excel File</label>
+                    <input type="file" id="file" name="file" class="form-control" accept=".csv, .xls, .xlsx" required />
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Upload File</button>
+            </form>
+
+            <!-- Display success or error messages -->
+            <div th:if="${uploadMessage}" class="alert alert-info">
+                <p th:text="${uploadMessage}"></p>
+            </div>
+
+            <!-- Additional dashboard content for bus operation -->
+            <div th:if="${busOperations}">
+                <h3>Edit Bus Operations</h3>
+                <!-- Here you can display and allow editing of the bus operation data -->
+                <form th:action="@{/updateBusOperations}" method="post">
+                    <div th:each="operation : ${busOperations}">
+                        <div class="form-group">
+                            <label th:for="operation.id" th:text="'Bus ID: ' + ${operation.id}"></label>
+                            <input type="text" th:id="operation.id" th:name="operation.id" th:value="${operation.id}" class="form-control" readonly />
+                            <!-- You can add more fields to update bus operation data -->
+                            <label th:for="operation.details" th:text="'Details: '"></label>
+                            <input type="text" th:id="operation.details" th:name="operation.details" th:value="${operation.details}" class="form-control" />
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success btn-block">Update Operations</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
