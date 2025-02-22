@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,7 +26,6 @@ public class BogdanController {
     private JwtUtil jwtUtil;
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
-
     @Autowired
     private UserRepository userRepository;
     @Autowired
@@ -35,11 +35,13 @@ public class BogdanController {
     public String loginPage() {
         return "login"; // Show the login page
     }
+
     @GetMapping("/register")
     public String showRegistrationForm(Model model) {
         model.addAttribute("user", new User());  // Create an empty User object for form binding
         return "register"; // Render the Thymeleaf registration form
     }
+
     @PostMapping("/register")
     public String registerUser(@ModelAttribute User user, Model model) {
         // Check if the username already exists in the database
@@ -59,24 +61,18 @@ public class BogdanController {
 
         return "register"; // Return to the registration page with success message
     }
+
     @PostMapping("/authenticate")
     public ResponseEntity<Map<String, String>> generateToken(@RequestBody AuthRequest authRequest) throws Exception {
-        try {
-            System.out.println("User name is : " + authRequest.getUsername());
-            System.out.println("User Password is : " + authRequest.getPassword());
-            // Authenticate the user using username and password
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
-
-
-        } catch (BadCredentialsException ex) {
-            throw new Exception("Invalid username/password", ex);
-        }
+        // Authenticate the user using username and password
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
 
         // Retrieve the user from the database based on the username
         User user = userRepository.findByusername(authRequest.getUsername());
         if (user == null) {
-            throw new Exception("User not found");
+            // This exception will be handled globally by the GlobalExceptionHandler
+            throw new UsernameNotFoundException("User not found");
         }
 
         // Get the role from the user object (you have a single role here, so no need for a Set)
@@ -92,6 +88,4 @@ public class BogdanController {
         response.put("token", token);
         return ResponseEntity.ok(response);
     }
-
-
 }
