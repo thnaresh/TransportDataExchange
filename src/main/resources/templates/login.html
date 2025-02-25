@@ -37,60 +37,54 @@
 
 <script>
     document.getElementById("loginForm").addEventListener("submit", async function(e) {
-     e.preventDefault();
+    e.preventDefault();
 
-     const errorMessage = document.getElementById("errorMessage");
-     errorMessage.style.display = "none";
+    const errorMessage = document.getElementById("errorMessage");
+    errorMessage.style.display = "none";
 
-     const username = document.getElementById("username").value;
-     const password = document.getElementById("password").value;
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
 
-     console.log("Submitting with username: " + username);
-     console.log("Submitting with password: " + password);
+    console.log("Submitting with username: " + username);
+    console.log("Submitting with password: " + password);
 
-     try {
-         const response = await fetch('/authenticate', {
-             method: 'POST',
-             headers: {
-                 'Content-Type': 'application/json'
-             },
-             body: JSON.stringify({
-                 username: username,
-                 password: password
-             })
-         });
+    try {
+        const response = await fetch('/authenticate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password
+            })
+        });
 
-         if (!response.ok) {
-             throw new Error('Login failed');
-         }
+        if (!response.ok) {
+            throw new Error('Login failed');
+        }
 
-         const data = await response.json();
+        const data = await response.json();
 
-         if (data.token) {
-             // Store JWT token in localStorage or sessionStorage
-             localStorage.setItem('jwtToken', data.token);
+        if (data.token) {
+            // Store JWT token in localStorage or sessionStorage
+            localStorage.setItem('jwtToken', data.token);
+            console.log("Token stored:", data.token);
 
-             // Decode the JWT token to extract role and username
-             const payload = JSON.parse(atob(data.token.split('.')[1])); // Decode the payload (Base64)
+            // Get the redirect URL from the response
+            const redirectUrl = data.redirectUrl;
 
-             // Redirect based on the role extracted from the JWT payload
-             if (payload.userRole === 'admin') {
-                 window.location.href = '/bogdandashboard.html';
-             } else if (payload.userRole === 'operations') {
-                 window.location.href = '/bovadashboard.html';
-             } else if (payload.userRole === 'qa') {
-                 window.location.href = '/bristoldashboard.html';
-             } else {
-                 window.location.href = '/login';
-             }
-         } else {
-             errorMessage.style.display = "block";
-         }
-     } catch (error) {
-         console.error("Error during authentication:", error);
-         errorMessage.style.display = "block";
-     }
- });
+            // Redirect to the appropriate page
+            console.log("Redirecting to:", redirectUrl);
+            window.location.href = redirectUrl;
+        } else {
+            errorMessage.style.display = "block";
+        }
+    } catch (error) {
+        console.error("Error during authentication:", error);
+        errorMessage.style.display = "block";
+    }
+});
 
 </script>
 

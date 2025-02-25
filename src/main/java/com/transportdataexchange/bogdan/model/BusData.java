@@ -1,37 +1,31 @@
 package com.transportdataexchange.bogdan.model;
 
-import lombok.NoArgsConstructor;
-
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
 @Entity
-@NoArgsConstructor
 public class BusData {
 
     @Id
-    private int idTrim;
-
+    private Integer idTrim;
     private String make;
     private String model;
     private String series;
     private String classBus;
     private String appointment;
-    private int totalSeats;
-    private int boardingSeats;
-    private int doorWidth;
-    private double materialCost;
-    private String environmentalStandard;
+    private String totalSeats;
+    private Integer doorWidth;
+    private Double materialCost;
     private String engineType;
-    private int numberOfCylinders;
-    private int gearAmount;
-    private int length;
+    private Integer numberOfCylinders;
+    private Integer amountOfGear;
 
-    public int getIdTrim() {
+
+    public Integer getIdTrim() {
         return idTrim;
     }
 
-    public void setIdTrim(int idTrim) {
+    public void setIdTrim(Integer idTrim) {
         this.idTrim = idTrim;
     }
 
@@ -75,44 +69,28 @@ public class BusData {
         this.appointment = appointment;
     }
 
-    public int getTotalSeats() {
+    public String getTotalSeats() {
         return totalSeats;
     }
 
-    public void setTotalSeats(int totalSeats) {
+    public void setTotalSeats(String totalSeats) {
         this.totalSeats = totalSeats;
     }
 
-    public int getBoardingSeats() {
-        return boardingSeats;
-    }
-
-    public void setBoardingSeats(int boardingSeats) {
-        this.boardingSeats = boardingSeats;
-    }
-
-    public int getDoorWidth() {
+    public Integer getDoorWidth() {
         return doorWidth;
     }
 
-    public void setDoorWidth(int doorWidth) {
+    public void setDoorWidth(Integer doorWidth) {
         this.doorWidth = doorWidth;
     }
 
-    public double getMaterialCost() {
+    public Double getMaterialCost() {
         return materialCost;
     }
 
-    public void setMaterialCost(double materialCost) {
+    public void setMaterialCost(Double materialCost) {
         this.materialCost = materialCost;
-    }
-
-    public String getEnvironmentalStandard() {
-        return environmentalStandard;
-    }
-
-    public void setEnvironmentalStandard(String environmentalStandard) {
-        this.environmentalStandard = environmentalStandard;
     }
 
     public String getEngineType() {
@@ -123,27 +101,19 @@ public class BusData {
         this.engineType = engineType;
     }
 
-    public int getNumberOfCylinders() {
+    public Integer getNumberOfCylinders() {
         return numberOfCylinders;
     }
 
-    public void setNumberOfCylinders(int numberOfCylinders) {
+    public void setNumberOfCylinders(Integer numberOfCylinders) {
         this.numberOfCylinders = numberOfCylinders;
     }
 
-    public int getGearAmount() {
-        return gearAmount;
+    public Integer getAmountOfGear() {
+        return amountOfGear;
     }
 
-    public void setGearAmount(int gearAmount) {
-        this.gearAmount = gearAmount;
-    }
-
-    public int getLength() {
-        return length;
-    }
-
-    public void setLength(int length) {
-        this.length = length;
+    public void setAmountOfGear(Integer amountOfGear) {
+        this.amountOfGear = amountOfGear;
     }
 }

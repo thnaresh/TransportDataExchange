@@ -1,10 +1,14 @@
 package com.transportdataexchange.bogdan.controller;
 
 import com.transportdataexchange.bogdan.model.AuthRequest;
+import com.transportdataexchange.bogdan.model.BusData;
 import com.transportdataexchange.bogdan.model.User;
 import com.transportdataexchange.bogdan.repository.UserRepository;
+import com.transportdataexchange.bogdan.service.BusDataService;
 import com.transportdataexchange.bogdan.utility.JwtUtil;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -13,15 +17,16 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 
 @Controller
+@Log4j2
 public class BogdanController {
+    @Autowired
+    private BusDataService busDataService;
     @Autowired
     private JwtUtil jwtUtil;
     @Autowired
@@ -75,17 +80,60 @@ public class BogdanController {
             throw new UsernameNotFoundException("User not found");
         }
 
-        // Get the role from the user object (you have a single role here, so no need for a Set)
+        // Get the role from the user object
         Set<String> roles = new HashSet<>();
         roles.add(user.getRole()); // Since you have only one role, add it directly
 
         // Generate the JWT token
         String token = jwtUtil.generateToken(authRequest.getUsername(), roles);
-        System.out.println("Generated token: " + token);
+        log.info("Generated token: " + token);
 
-        // Return the token in the response
+        // Return the token and the appropriate redirect URL
+        String redirectUrl = getRedirectUrlByRole(user.getRole());
+
         Map<String, String> response = new HashMap<>();
         response.put("token", token);
+        response.put("redirectUrl", redirectUrl);
         return ResponseEntity.ok(response);
     }
+
+//    @PostMapping("/saveBusData")
+//    public ResponseEntity<String> uploadBusData(@RequestParam("file") MultipartFile file) {
+//        try {
+//            log.info("Entered in save bus data method");
+//            busDataService.uploadBusData(file);
+//            return ResponseEntity.ok("File uploaded and processed successfully.");
+//        } catch (Exception e) {
+//            log.error("Error occurred while processing the file: " + e.getMessage(), e);
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+//                    .body("Error occurred while processing the file: " + e.getMessage());
+//        }
+//    }
+
+    @PostMapping("/updateBusData")
+    public ResponseEntity<?> updateBusData(@RequestBody List<BusData> updatedData) {
+        for (BusData bus : updatedData) {
+            busDataService.save(bus); // Save updates (make sure the entity has @Id on idTrim)
+        }
+        return ResponseEntity.ok().build();
+    }
+
+
+
+
+
+    private String getRedirectUrlByRole(String role) {
+        switch (role) {
+            case "admin":
+                return "/bogdandashboard.html";
+            case "operations":
+                return "/bovadashboard.html";
+            case "qa":
+                return "/bristoldashboard.html";
+            default:
+                return "/login";
+        }
+    }
+
+
 }
