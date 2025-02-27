@@ -126,4 +126,16 @@ public class BusDataService {
     public void save(BusData bus) {
      busDataRepository.save( bus);
     }
+
+    public List<BusData> getExceldata() {
+      return   busDataRepository.findAll();
+    }
+    public void updateMaterialCosts(List<BusData> busOperations) {
+        for (BusData operation : busOperations) {
+            busDataRepository.findById(operation.getIdTrim()).ifPresent(existing -> {
+                existing.setMaterialCost(operation.getMaterialCost());
+                busDataRepository.save(existing);
+            });
+        }
+    }
 }

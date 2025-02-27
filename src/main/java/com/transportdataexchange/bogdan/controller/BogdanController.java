@@ -52,19 +52,19 @@ public class BogdanController {
         // Check if the username already exists in the database
         if (userRepository.findByusername(user.getUsername()) != null) {
             model.addAttribute("error", "Username already exists.");
-            return "register";  // Show error message on the registration form
+            return "register";
         }
 
         // Encrypt the password before saving
         String encodedPassword = passwordEncoder.encode(user.getPassword());
-        user.setPassword(encodedPassword);  // Set the encoded password
+        user.setPassword(encodedPassword);
         // Save the new user to the database
         userRepository.save(user);
 
         // Add a success message to the model
         model.addAttribute("successMessage", "Registration successful! Please login.");
 
-        return "register"; // Return to the registration page with success message
+        return "register";
     }
 
     @PostMapping("/authenticate")
@@ -76,13 +76,12 @@ public class BogdanController {
         // Retrieve the user from the database based on the username
         User user = userRepository.findByusername(authRequest.getUsername());
         if (user == null) {
-            // This exception will be handled globally by the GlobalExceptionHandler
             throw new UsernameNotFoundException("User not found");
         }
 
         // Get the role from the user object
         Set<String> roles = new HashSet<>();
-        roles.add(user.getRole()); // Since you have only one role, add it directly
+        roles.add(user.getRole());
 
         // Generate the JWT token
         String token = jwtUtil.generateToken(authRequest.getUsername(), roles);
@@ -113,7 +112,7 @@ public class BogdanController {
     @PostMapping("/updateBusData")
     public ResponseEntity<?> updateBusData(@RequestBody List<BusData> updatedData) {
         for (BusData bus : updatedData) {
-            busDataService.save(bus); // Save updates (make sure the entity has @Id on idTrim)
+            busDataService.save(bus);
         }
         return ResponseEntity.ok().build();
     }

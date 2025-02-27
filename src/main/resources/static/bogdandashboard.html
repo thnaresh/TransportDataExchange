@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/html">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,9 +18,7 @@
         }
         .table-container {
             overflow-x: auto;
-            white-space: nowrap;
-            max-height: 500px;
-            overflow-y: auto;
+            width : 100%;
         }
         table {
             min-width: 800px;
@@ -43,115 +41,169 @@
             outline: none;
             border-color: #007bff;
         }
-        /* Beautify Choose File and Center Save Changes */
         #excelFile {
             display: block;
             margin: 0 auto;
             max-width: 300px;
         }
-        #saveChanges {
-            display: block;
-            margin: 20px auto;
+
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
         }
+
+        .button-container button {
+            display: block;
+            width: 150px;
+            margin: 10px auto;
+        }
+
+        /* Flexbox for Layout */
+        .main-content {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+       }
+
+     .upload-section {
+      flex: 1 1 60%;
+      min-width: 300px;
+     }
+
+
+
+        /* Fit Material Cost Table to Page */
+#materialCostData {
+    overflow-x: auto;
+    width: 100%;
+}
+
+#materialCostData table {
+    width: 100%;
+    table-layout: auto;
+}
+
+#materialCostData th,
+#materialCostData td {
+    white-space: nowrap;
+    text-align: center;
+}
+
+.material-cost-section {
+    width: 100%;
+}
+
     </style>
 </head>
 <body>
 <div class="container mt-5">
     <h2 class="text-center mb-4">Upload Bus Operation Data</h2>
-    <div class="mb-3 text-center">
-        <input type="file" id="excelFile" class="form-control" accept=".xlsx, .xls">
-    </div>
-    <div class="table-container">
-        <table class="table table-bordered table-hover">
-            <thead class="table-dark" id="table-head">
-            <!-- Table Headers will be dynamically generated -->
-            </thead>
-            <tbody id="table-body">
-            <!-- Table Rows will be dynamically generated -->
-            </tbody>
-        </table>
-        <div class="text-center">
-            <button class="btn btn-success mt-3" id="saveChanges" style="display: none;">Save Changes</button>
+    <div class="main-content">
+        <!-- Left Column: Upload and Edit Table -->
+        <div class="upload-section">
+            <div class="mb-3 text-center">
+                <input type="file" id="excelFile" class="form-control" accept=".xlsx, .xls">
+            </div>
+            <div class="table-container">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-dark" id="table-head">
+                    </thead>
+                    <tbody id="table-body">
+                    </tbody>
+                </table>
+            </div>
+            <div class="button-container">
+                <button class="btn btn-success" id="saveChanges" style="display: none;">Save Changes</button>
+                <button id="logoutButton" class="btn btn-danger">Logout</button>
+            </div>
         </div>
 
+        <!-- Right Column: View Material Cost -->
+        <div class="material-cost-section">
+            <h2 class="text-center mb-4">Material Cost</h2>
+            <button class="btn btn-primary d-block mx-auto" id="viewMaterialCost">View Material Cost</button>
+            <div id="materialCostData" class="mt-4">
+                <!-- Material cost data will be displayed here -->
+            </div>
+        </div>
+    </div>
+</div>
 
-        <!-- Bootstrap JS and Dependencies -->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
-        <!-- SheetJS (xlsx) Library -->
-        <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<!-- Bootstrap JS and Dependencies -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- SheetJS (xlsx) Library -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
-        <!-- Custom Script -->
-        <script>
-            let excelData = [];
+<script>
+    let excelData = [];
 
-   document.getElementById('excelFile').addEventListener('change', function(event) {
-       const file = event.target.files[0];
-       if (file) {
-           const reader = new FileReader();
-           reader.onload = function(e) {
-               const data = new Uint8Array(e.target.result);
-               const workbook = XLSX.read(data, { type: 'array' });
-               const sheetName = workbook.SheetNames[0];
-               const sheet = workbook.Sheets[sheetName];
-               excelData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+    document.getElementById('excelFile').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        const materialCostSection = document.querySelector('.material-cost-section');
 
-               // Clean and Format Data
-               excelData = excelData.map(row =>
-                   row.map(cell => (cell === undefined || cell === null) ? '' : String(cell).trim())
-               );
-               displayTable(excelData);
-               document.getElementById('saveChanges').style.display = 'inline-block';
-           };
-           reader.readAsArrayBuffer(file);
-       }
-   });
+        if (file) {
+            // Hide Material Cost Section when a file is selected
+            materialCostSection.style.display = 'none';
 
-  function displayTable(data) {
-    const tableHead = document.getElementById('table-head');
-    const tableBody = document.getElementById('table-body');
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheetName = workbook.SheetNames[0];
+                const sheet = workbook.Sheets[sheetName];
+                excelData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-    tableHead.innerHTML = '';
-    tableBody.innerHTML = '';
-
-    // Create Table Headers
-    const headerRow = document.createElement('tr');
-    data[0].forEach(header => {
-        const th = document.createElement('th');
-        th.textContent = header;
-        headerRow.appendChild(th);
-    });
-    tableHead.appendChild(headerRow);
-
-    // Create Table Rows
-    data.slice(1).forEach((rowData, rowIndex) => {
-        const row = document.createElement('tr');
-
-        // Ensure each row has the same number of columns as the header
-        for (let colIndex = 0; colIndex < data[0].length; colIndex++) {
-            const cell = document.createElement('td');
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.value = rowData[colIndex] || '';
-
-            // Disable input for Material Cost column (index 8)
-            if (colIndex === 8) {
-                input.setAttribute('disabled', 'disabled');
-            } else {
-                input.addEventListener('input', function() {
-                    // Track changes in excelData array
-                    excelData[rowIndex + 1][colIndex] = this.value;
-                });
-            }
-
-            cell.appendChild(input);
-            row.appendChild(cell);
+                excelData = excelData.map(row =>
+                    row.map(cell => (cell === undefined || cell === null) ? '' : String(cell).trim())
+                );
+                displayTable(excelData);
+                document.getElementById('saveChanges').style.display = 'inline-block';
+            };
+            reader.readAsArrayBuffer(file);
+        } else {
+            // Show Material Cost Section if no file is selected
+            materialCostSection.style.display = 'block';
         }
-
-        tableBody.appendChild(row);
     });
-}
 
-// Save Changes to Database
+    function displayTable(data) {
+        const tableHead = document.getElementById('table-head');
+        const tableBody = document.getElementById('table-body');
+
+        tableHead.innerHTML = '';
+        tableBody.innerHTML = '';
+
+        const headerRow = document.createElement('tr');
+        data[0].forEach(header => {
+            const th = document.createElement('th');
+            th.textContent = header;
+            headerRow.appendChild(th);
+        });
+        tableHead.appendChild(headerRow);
+
+        data.slice(1).forEach((rowData, rowIndex) => {
+            const row = document.createElement('tr');
+            for (let colIndex = 0; colIndex < data[0].length; colIndex++) {
+                const cell = document.createElement('td');
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.value = rowData[colIndex] || '';
+
+                if (colIndex === 8) {
+                    input.setAttribute('disabled', 'disabled');
+                } else {
+                    input.addEventListener('input', function() {
+                        excelData[rowIndex + 1][colIndex] = this.value;
+                    });
+                }
+                cell.appendChild(input);
+                row.appendChild(cell);
+            }
+            tableBody.appendChild(row);
+        });
+    }
+
+      // Save Changes to Database
 document.getElementById('saveChanges').addEventListener('click', function() {
     // Collect updated data
     const updatedData = excelData.slice(1).map(row => {
@@ -190,7 +242,44 @@ document.getElementById('saveChanges').addEventListener('click', function() {
         alert('Error updating data.');
     });
 });
+document.getElementById('logoutButton').addEventListener('click', function() {
+    // Redirect to the login page
+    window.location.href = "/";
+});
 
-        </script>
+
+    document.getElementById('viewMaterialCost').addEventListener('click', () => {
+        fetch('/getData')
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('materialCostData');
+                container.innerHTML = '';
+
+                if (data.length) {
+                    const table = document.createElement('table');
+                    table.className = 'table table-striped';
+                    const thead = table.createTHead().insertRow();
+                     thead.style.backgroundColor = 'yellow';
+                     thead.style.fontWeight = 'bold';
+                    Object.keys(data[0]).forEach(key => {
+                        thead.insertCell().textContent = key;
+                    });
+
+                    const tbody = table.createTBody();
+                    data.forEach(row => {
+                        const tr = tbody.insertRow();
+                        Object.values(row).forEach(value => {
+                            tr.insertCell().textContent = value;
+                        });
+                    });
+
+                    container.appendChild(table);
+                } else {
+                    container.innerHTML = '<p>No material cost data found.</p>';
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    });
+</script>
 </body>
 </html>
