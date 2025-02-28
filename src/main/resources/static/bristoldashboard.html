@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Bristol Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.17.0/dist/xlsx.full.min.js"></script>
+    <style>
+        /* Centering the card in the middle of the page */
+        .upload-container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        /* Heading styling */
+        h2.text-center {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        /* Buttons styling */
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+
+        .btn-danger {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        /* Alert Message styling */
+        .alert {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<!-- Main Content -->
+<div class="container">
+    <div class="upload-container">
+        <h2 class="text-center">Upload Trailer Data (Excel)</h2>
+
+        <!-- Alert Messages -->
+        <div id="successMessage" class="alert alert-success">Data uploaded successfully!</div>
+        <div id="errorMessage" class="alert alert-danger">Error uploading data. Please try again.</div>
+        <div id="noFileMessage" class="alert alert-warning">Please choose a file before uploading.</div>
+
+        <form id="uploadForm" action="#" th:action="@{/uploadTrailer}" th:object="${file}" method="post" enctype="multipart/form-data">
+            <div class="mb-3">
+                <input type="file" class="form-control" id="file" name="file" accept=".xls, .xlsx" required>
+            </div>
+
+            <!-- Upload Button with ID added -->
+            <div class="text-center mb-3">
+                <button type="button" id="uploadButton" class="btn btn-primary">Upload</button>
+            </div>
+        </form>
+
+        <!-- Logout Button with ID added -->
+        <div class="text-center">
+            <button id="logoutButton" class="btn btn-danger">Logout</button>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Logout and Upload Functionality -->
+<script>
+    // Logout Functionality
+    document.getElementById('logoutButton').addEventListener('click', function() {
+        window.location.href = "/";
+    });
+
+    let excelData = [];
+
+    // Upload Button Click Event
+    document.getElementById('uploadButton').addEventListener('click', function(event) {
+        event.preventDefault(); // Prevent form submission
+
+        // Hide alert messages
+        document.getElementById('noFileMessage').style.display = 'none';
+        document.getElementById('successMessage').style.display = 'none';
+        document.getElementById('errorMessage').style.display = 'none';
+
+        const fileInput = document.getElementById('file');
+        const file = fileInput.files[0];
+
+        // Check if file is selected
+        if (!file) {
+            document.getElementById('noFileMessage').style.display = 'block';
+            return;
+        }
+
+        // Read and parse Excel file
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const sheetName = workbook.SheetNames[0];
+            const sheet = workbook.Sheets[sheetName];
+            excelData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+            // Remove empty cells and trim whitespace
+            excelData = excelData.map(row =>
+                row.map(cell => (cell === undefined || cell === null) ? '' : String(cell).trim())
+            );
+
+            // Prepare data for backend
+            const updatedData = excelData.slice(1).map(row => {
+                return {
+                    idTrim: row[0],              // Unique identifier
+                    make: row[1],
+                    model: row[2],
+                    series: row[3],
+                    typeOfTrailer: row[4],
+                    payloadKg: row[5],
+                    usefulVolume: row[6],
+                    lengthOfPlatform: row[7],
+                    heightWithAwning: row[8],
+                    loadingHeight: row[9],
+                    numberOfWheelsSpare: row[10]
+                };
+            });
+
+            // Send data to backend
+            fetch('/Savetdata', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updatedData)
+            })
+            .then(response => {
+                if (response.ok) {
+                    document.getElementById('successMessage').style.display = 'block';
+                } else {
+                    document.getElementById('errorMessage').style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('errorMessage').style.display = 'block';
+            });
+        };
+
+        reader.readAsArrayBuffer(file);
+    });
+</script>
+</body>
+</html>

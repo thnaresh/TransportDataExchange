@@ -1,6 +1,7 @@
 package com.transportdataexchange.bogdan.service;
 
 import com.transportdataexchange.bogdan.model.BusData;
+import com.transportdataexchange.bogdan.model.TrailerData;
 import com.transportdataexchange.bogdan.repository.BusDataRepository;
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.ss.usermodel.*;
@@ -126,6 +127,7 @@ public class BusDataService {
     public void save(BusData bus) {
      busDataRepository.save( bus);
     }
+
 
     public List<BusData> getExceldata() {
       return   busDataRepository.findAll();
