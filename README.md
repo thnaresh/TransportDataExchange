@@ -18,6 +18,7 @@
 3. View Operation Data: Check the uploaded data in tabular format.  
 4. View Material Costs: After Bova staff updates material costs, Bogdan staff can verify the data.  
 5. View Trailer Data: Access and verify trailer data uploaded by Bristol staff.  
+![Uploading image.png…]()
 
 # 2.2. Bova Staff Flow:  
 1. Log in and navigate to the Bova Dashboard.  
