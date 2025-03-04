@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -93,6 +94,27 @@
     width: 100%;
 }
 
+  /* Fit Trailer data  Table to Page */
+#trailerData {
+    overflow-x: auto;
+    width: 100%;
+}
+
+#trailerData table {
+    width: 100%;
+    table-layout: auto;
+}
+
+#trailerData th,
+#trailerData td {
+    white-space: nowrap;
+    text-align: center;
+}
+
+.trailer-data-section {
+    width: 100%;
+}
+
     </style>
 </head>
 <body>
@@ -124,6 +146,15 @@
             <button class="btn btn-primary d-block mx-auto" id="viewMaterialCost">View Material Cost</button>
             <div id="materialCostData" class="mt-4">
                 <!-- Material cost data will be displayed here -->
+            </div>
+        </div>
+
+        <!-- Right Column: View Trailer Data-->
+        <div class="trailer-data-section">
+            <h2 class="text-center mb-4">Trailer Data</h2>
+            <button class="btn btn-primary d-block mx-auto" id="viewTrailerData">View Trailer Data</button>
+            <div id="trailerData" class="mt-4">
+                <!-- Trailer data will be displayed here -->
             </div>
         </div>
     </div>
@@ -249,38 +280,149 @@ document.getElementById('logoutButton').addEventListener('click', function() {
 });
 
 
-    document.getElementById('viewMaterialCost').addEventListener('click', () => {
-        fetch('/getData')
-            .then(response => response.json())
-            .then(data => {
-                const container = document.getElementById('materialCostData');
-                container.innerHTML = '';
+   document.getElementById('viewMaterialCost').addEventListener('click', () => {
+    fetch('/getData')
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('materialCostData');
+            container.innerHTML = ''; // Clear previous content
 
-                if (data.length) {
-                    const table = document.createElement('table');
-                    table.className = 'table table-striped';
-                    const thead = table.createTHead().insertRow();
-                     thead.style.backgroundColor = 'yellow';
-                     thead.style.fontWeight = 'bold';
-                    Object.keys(data[0]).forEach(key => {
-                        thead.insertCell().textContent = key;
+            if (data.length) {
+                // Create and append the Close button
+                const closeButton = document.createElement('button');
+                closeButton.textContent = 'Close';
+                closeButton.style.marginBottom = '10px';
+                closeButton.style.backgroundColor = 'red';
+                closeButton.style.color = 'white';
+                closeButton.style.border = 'none';
+                closeButton.style.padding = '5px 10px';
+                closeButton.style.cursor = 'pointer';
+                closeButton.addEventListener('click', () => {
+                    container.innerHTML = ''; // Hide the table when clicked
+                });
+
+                container.appendChild(closeButton);
+
+                // Create table
+                const table = document.createElement('table');
+                table.className = 'table table-striped';
+                table.style.borderCollapse = 'collapse'; // Ensures proper border spacing
+
+                const thead = table.createTHead();
+                const headerRow = thead.insertRow();
+                headerRow.style.backgroundColor = 'yellow';
+                headerRow.style.fontWeight = 'bold';
+
+                // Create table headers dynamically
+                Object.keys(data[0]).forEach(key => {
+                    const th = document.createElement('th');
+                    th.textContent = key;
+                    th.style.color = 'black'; // Make text black
+                    th.style.border = '1px solid black';
+                    th.style.padding = '5px';
+                    headerRow.appendChild(th);
+                });
+
+                // Create table body
+                const tbody = table.createTBody();
+                data.forEach(row => {
+                    const tr = tbody.insertRow();
+                    Object.values(row).forEach(value => {
+                        const td = tr.insertCell();
+                        td.textContent = value;
+                        td.style.border = '1px solid black';
+                        td.style.padding = '5px';
                     });
+                });
 
-                    const tbody = table.createTBody();
-                    data.forEach(row => {
-                        const tr = tbody.insertRow();
-                        Object.values(row).forEach(value => {
-                            tr.insertCell().textContent = value;
-                        });
+                // Append table after the close button
+                container.appendChild(table);
+            } else {
+                container.innerHTML = '<p>No material cost data found.</p>';
+            }
+        })
+        .catch(error => console.error('Error:', error));
+});
+
+document.getElementById('viewTrailerData').addEventListener('click', () => {
+    fetch('/trailerData')
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('trailerData');
+            container.innerHTML = ''; // Clear previous data
+
+            if (data.length) {
+                // Create and append the Close button
+                const closeButton = document.createElement('button');
+                closeButton.textContent = 'Close';
+                closeButton.style.marginBottom = '10px';
+                closeButton.style.backgroundColor = 'red';
+                closeButton.style.color = 'white';
+                closeButton.style.border = 'none';
+                closeButton.style.padding = '5px 10px';
+                closeButton.style.cursor = 'pointer';
+                closeButton.addEventListener('click', () => {
+                    container.innerHTML = ''; // Hide table when clicked
+                });
+
+                // Append Close button to container
+                container.appendChild(closeButton);
+
+                // Define expected headers matching the image format
+                const headers = [
+                    { key: "idTrim", label: "ID Trim" },
+                    { key: "make", label: "Make" },
+                    { key: "model", label: "Model" },
+                    { key: "series", label: "Series" },
+                    { key: "typeOfTrailer", label: "Type of Trailer" },
+                    { key: "payloadKg", label: "Payload (kg)" },
+                    { key: "usefulVolume", label: "Useful Volume" },
+                    { key: "lengthOfPlatform", label: "Length of Platform" },
+                    { key: "heightWithAwning", label: "Height with Awning" },
+                    { key: "loadingHeight", label: "Loading Height" },
+                    { key: "numberOfWheelsSpare", label: "Number of Wheels + Spare" }
+                ];
+
+                // Create table
+                const table = document.createElement('table');
+                table.className = 'table table-striped';
+                table.style.borderCollapse = 'collapse'; // Ensures proper border spacing
+
+                // Create table header
+                const thead = table.createTHead();
+                const headerRow = thead.insertRow();
+                headers.forEach(header => {
+                    let th = document.createElement('th');
+                    th.textContent = header.label;
+                    th.style.backgroundColor = 'yellow';
+                    th.style.color = 'black'; // Set text color to black
+                    th.style.fontWeight = 'bold';
+                    th.style.border = '1px solid black';
+                    th.style.padding = '5px';
+                    headerRow.appendChild(th);
+                });
+
+                // Create table body
+                const tbody = table.createTBody();
+                data.forEach(row => {
+                    const tr = tbody.insertRow();
+                    headers.forEach(header => {
+                        let td = tr.insertCell();
+                        td.textContent = row[header.key] || ''; // Handle missing values
+                        td.style.border = '1px solid black';
+                        td.style.padding = '5px';
                     });
+                });
 
-                    container.appendChild(table);
-                } else {
-                    container.innerHTML = '<p>No material cost data found.</p>';
-                }
-            })
-            .catch(error => console.error('Error:', error));
-    });
+                // Append table after Close button
+                container.appendChild(table);
+            } else {
+                container.innerHTML = '<p>No trailer data found.</p>';
+            }
+        })
+        .catch(error => console.error('Error fetching trailer data:', error));
+});
+
 </script>
 </body>
 </html>
