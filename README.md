@@ -7,7 +7,9 @@
   - Each role has specific privileges:  
     - Bogdan: Full access to bus and trailer data management.  
     - Bova: Limited to viewing and updating bus operation data.  
-    - Bristol: Limited to uploading trailer data.  
+    - Bristol: Limited to uploading trailer data.
+      
+![image](https://github.com/user-attachments/assets/19b3358e-8c52-4da6-9edc-a8a558f76472)
 
  2. Functional Flow:  
 # 2.1. Bogdan Staff Flow:  
